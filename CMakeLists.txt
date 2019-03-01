@@ -1,9 +1,10 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.10)
+cmake_policy(SET CMP0042 NEW)
 project(Example
-        VERSION 2.2.0
+        VERSION 1.0.0
         DESCRIPTION "CMake packaging example for Qt application"
         LANGUAGES C CXX)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## Default Qt5 path
@@ -17,19 +18,32 @@ endif()
 
 ##---------------------------------------------------------------------------------
 
-add_executable(Example src/main.cpp)
-
-# Qt5 libraries
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-target_link_libraries(Example PRIVATE Qt5::Core Qt5::Widgets)
+set(target ${PROJECT_NAME})
+add_executable(${target} src/main.cpp)
+target_link_libraries(${target} PRIVATE Qt5::Core Qt5::Widgets)
 
 ## Qt5 configurations
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-set_property(TARGET Example PROPERTY AUTORCC_OPTIONS "--compress;9")
 
-install(TARGETS Example RUNTIME DESTINATION bin)
+set_target_properties(${target} PROPERTIES AUTORCC_OPTIONS "--compress;9")
+
+if(UNIX AND NOT APPLE)
+    install(TARGETS ${target} RUNTIME DESTINATION bin)
+endif()
+# Windows install Settings
+if(WIN32)
+    install(TARGETS ${target} RUNTIME DESTINATION bin)
+endif()
+
+# Apple Install Settings
+if(APPLE)
+    set(CMAKE_MACOSX_BUNDLE ON)
+    install(TARGETS ${target} BUNDLE RUNTIME DESTINATION Example)
+    set_source_files_properties(resources/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif()
 
 set(desktop.path applications)
 set(desktop.files resources/example.desktop)
@@ -42,6 +56,12 @@ foreach(items IN ITEMS desktop icon iconsvg)
             DESTINATION share/${${items}.path}
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 endforeach()
+# Components:
+if(CMAKE_BUILD_TYPE_UPPER MATCHES "^(DEBUG|RELWITHDEBINFO)$")
+    set(CPACK_STRIP_FILES FALSE)
+else()
+    set(CPACK_STRIP_FILES TRUE)
+endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/Packaging.cmake)
 

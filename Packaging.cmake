@@ -5,14 +5,11 @@ get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 find_program(LINUXDEPLOYQT_EXECUTABLE linuxdeployqt linuxdeployqt-continuous-x86_64.AppImage HINTS "${_qt_bin_dir}")
 find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
-find_program(MACDEPLOYQTFIX_EXECUTABLE macdeployqtfix.py HINTS "${_qt_bin_dir}")
-find_package(Python)
 
 set(CPACK_IFW_ROOT $ENV{HOME}/Qt/QtIFW-3.0.6/ CACHE PATH "Qt Installer Framework installation base path")
-find_program(BINARYCREATOR_EXECUTABLE binarycreator HINTS ${CPACK_IFW_ROOT}/bin)
+find_program(BINARYCREATOR_EXECUTABLE binarycreator HINTS "${_qt_bin_dir}" ${CPACK_IFW_ROOT}/bin)
 
-mark_as_advanced(WINDEPLOYQT_EXECUTABLE LINUXDEPLOYQT_EXECUTABLE)
-mark_as_advanced(MACDEPLOYQT_EXECUTABLE MACDEPLOYQTFIX_EXECUTABLE)
+mark_as_advanced(WINDEPLOYQT_EXECUTABLE LINUXDEPLOYQT_EXECUTABLE MACDEPLOYQT_EXECUTABLE)
 
 function(linuxdeployqt destdir desktopfile)
     # creating AppDir
@@ -28,46 +25,43 @@ function(linuxdeployqt destdir desktopfile)
     add_custom_command(TARGET bundle POST_BUILD
                        COMMAND "${LINUXDEPLOYQT_EXECUTABLE}"  ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
                                -appimage -qmake=${_qmake_executable}
-                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/packaging)
+                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 function(windeployqt target)
-    add_custom_command(TARGET ${target} POST_BUILD
+
+    # Bundle Library Files
+    if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
+        set(WINDEPLOYQT_ARGS --debug)
+    else()
+        set(WINDEPLOYQT_ARGS --release)
+    endif()
+
+    add_custom_command(TARGET bundle PRE_BUILD
                        COMMAND "${CMAKE_COMMAND}" -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/winqt/"
                        COMMAND "${CMAKE_COMMAND}" -E
                                env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                               ${WINDEPLOYQT_ARGS}
                                --verbose 0
                                --no-compiler-runtime
                                --no-angle
                                --no-opengl-sw
                                --dir "${CMAKE_CURRENT_BINARY_DIR}/winqt/"
-                               ${target}.exe
+                               $<TARGET_FILE:${target}>
                        COMMENT "Deploying Qt..."
-	)
-	install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/winqt/" DESTINATION bin)
-
+    )
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/winqt/" DESTINATION bin)
     set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
     include(InstallRequiredSystemLibraries)
 endfunction()
 
 function(macdeployqt target)
-    add_custom_command(TARGET bundle POST_BUILD
-                       COMMAND "${MACDEPLOYQT_EXECUTABLE}"
-                           \"$<TARGET_FILE_DIR:${target}>/../..\"
-                           -always-overwrite
-                       COMMAND ${Python_EXECUTABLE} "${MACDEPLOYQTFIX_EXECUTABLE}"
-                           \"$<TARGET_FILE_DIR:${target}>/Contents/MacOS/${target}\"
-                           ${qt_bin_dir}/../
-                       COMMAND "${MACDEPLOYQT_EXECUTABLE}"
-                           \"$<TARGET_FILE_DIR:${target}>/Contents/Frameworks/QtWebEngineCore.framework/Versions/5/Helpers/QtWebEngineProcess.app
-                       COMMAND ${Python_EXECUTABLE} "${MACDEPLOYQTFIX_EXECUTABLE}"
-                           \"$<TARGET_FILE_DIR:${target}>/Contents/Frameworks/QtWebEngineCore.framework/Versions/5/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess
-                           ${qt_bin_dir}/../
-                       COMMENT "Deploying Qt..."
-    )
+    file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/CPackMacDeployQt.cmake
+         CONTENT "execute_process(COMMAND \"${MACDEPLOYQT_EXECUTABLE}\" \"${CMAKE_INSTALL_PREFIX}/${target}.app\" -always-overwrite)")
+    install(SCRIPT ${CMAKE_BINARY_DIR}/CPackMacDeployQt.cmake COMPONENT Runtime)
 endfunction()
 
-set(CPACK_PACKAGE_VENDOR "Example")
+set(CPACK_PACKAGE_VENDOR "Example_vendor")
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_CONTACT "Example <example@example.com>")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
@@ -81,7 +75,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
 set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # set human names to exetuables
-set(CPACK_PACKAGE_EXECUTABLES "${PROJECT_NAME}")
+set(CPACK_PACKAGE_EXECUTABLES "${PROJECT_NAME}" "Example Apps")
 set(CPACK_CREATE_DESKTOP_LINKS "${PROJECT_NAME}")
 set(CPACK_STRIP_FILES TRUE)
 
@@ -101,7 +95,7 @@ if(WIN32 AND NOT UNIX)
     message(STATUS "Package generation - Windows")
     message(STATUS "   + ZIP                                  YES ")
     
-    set(PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/example.ico")
+    set(PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/icon.ico")
 
     # NSIS windows installer
     find_program(NSIS_PATH nsis PATH_SUFFIXES nsis)
@@ -139,12 +133,11 @@ elseif(APPLE)
     message(STATUS "   + DragNDrop                            YES ")
 
     set(CPACK_GENERATOR "TBZ2;DragNDrop")
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/")
     set(CPACK_DMG_VOLUME_NAME "${PROJECT_NAME}")
-    # set(CPACK_DMG_DS_STORE_SETUP_SCRIPT "${CMAKE_SOURCE_DIR}/DS_Store.scpt")
-    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/resources/example.png")
-    set(CPACK_OSX_PACKAGE_VERSION "10.6") #min package version
+    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/resources/icon64.png")
+    set(CPACK_OSX_PACKAGE_VERSION "10.6")
 
+    set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
     macdeployqt(${PROJECT_NAME})
 
 else()
@@ -194,7 +187,6 @@ endif()
 if(BINARYCREATOR_EXECUTABLE)
     set(CPACK_GENERATOR "${CPACK_GENERATOR};IFW")
     message(STATUS "   + Qt Installer Framework               YES ")
-    #set(CPACK_IFW_PACKAGE_RESOURCES ${CMAKE_SOURCE_DIR}/example.qrc)
 else()
     message(STATUS "   + Qt Installer Framework                NO ")
 endif()
