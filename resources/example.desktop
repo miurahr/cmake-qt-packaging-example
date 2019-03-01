@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Example
+GenericName=Example
+Comment=Example
+Icon=icon
+Terminal=false
+Exec=Example %F
+MimeType=text/text;
+Categories=Qt;Utility;
