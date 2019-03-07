@@ -37,7 +37,7 @@ function(windeployqt target)
         set(WINDEPLOYQT_ARGS --release)
     endif()
 
-    add_custom_command(TARGET bundle PRE_BUILD
+    add_custom_command(TARGET ${target} POST_BUILD
                        COMMAND "${CMAKE_COMMAND}" -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/winqt/"
                        COMMAND "${CMAKE_COMMAND}" -E
                                env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
@@ -57,8 +57,9 @@ endfunction()
 
 function(macdeployqt target)
     file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/CPackMacDeployQt.cmake
-         CONTENT "execute_process(COMMAND \"${MACDEPLOYQT_EXECUTABLE}\" \"${CMAKE_INSTALL_PREFIX}/${target}.app\" -always-overwrite)")
+         CONTENT "execute_process(COMMAND \"${MACDEPLOYQT_EXECUTABLE}\" \"${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/Darwin/BUNDLE/${target}.app/\" -always-overwrite)")
     install(SCRIPT ${CMAKE_BINARY_DIR}/CPackMacDeployQt.cmake COMPONENT Runtime)
+    include(InstallRequiredSystemLibraries)
 endfunction()
 
 set(CPACK_PACKAGE_VENDOR "Example_vendor")
@@ -87,11 +88,20 @@ add_custom_target(bundle
                   COMMAND ${CMAKE_CPACK_COMMAND} "--config" "${CMAKE_BINARY_DIR}/BundleConfig.cmake"
                   COMMENT "Running CPACK. Please wait..."
                   DEPENDS ${PROJECT_NAME})
+set(CPACK_GENERATOR)
+
+# Qt IFW packaging framework
+if(BINARYCREATOR_EXECUTABLE)
+    list(APPEND CPACK_GENERATOR IFW)
+    message(STATUS "   + Qt Installer Framework               YES ")
+else()
+    message(STATUS "   + Qt Installer Framework                NO ")
+endif()
 
 if(WIN32 AND NOT UNIX)
     #--------------------------------------------------------------------------
     # Windows specific
-    set(CPACK_GENERATOR "ZIP")
+    list(APPEND CPACK_GENERATOR ZIP)
     message(STATUS "Package generation - Windows")
     message(STATUS "   + ZIP                                  YES ")
     
@@ -100,7 +110,7 @@ if(WIN32 AND NOT UNIX)
     # NSIS windows installer
     find_program(NSIS_PATH nsis PATH_SUFFIXES nsis)
     if(NSIS_PATH)
-        set(CPACK_GENERATOR "${CPACK_GENERATOR};NSIS")
+        list(APPEND CPACK_GENERATOR NSIS)
         message(STATUS "   + NSIS                                 YES ")
 
         set(CPACK_NSIS_DISPLAY_NAME ${CPACK_PACKAGE_NAME})
@@ -116,7 +126,7 @@ if(WIN32 AND NOT UNIX)
     # NuGet package
     find_program(NUGET_EXECUTABLE nuget)
     if(NUGET_EXECUTABLE)
-        set(CPACK_GENERATOR "${CPACK_GENERATOR};NuGET")
+        list(APPEND CPACK_GENERATOR NuGET)
         message(STATUS "   + NuGET                               YES ")
         set(CPACK_NUGET_PACKAGE_NAME "${PROJECT_NAME}")
     else()
@@ -130,20 +140,26 @@ elseif(APPLE)
     # Apple specific
     message(STATUS "Package generation - Mac OS X")
     message(STATUS "   + TBZ2                                 YES ")
-    message(STATUS "   + DragNDrop                            YES ")
+    message(STATUS "   + BUNDLE                               YES ")
 
-    set(CPACK_GENERATOR "TBZ2;DragNDrop")
+    list(APPEND CPACK_GENERATOR TBZ2 BUNDLE)
+    set(APP_LOCATION "$<TARGET_FILE:${PROJECT_NAME}>" )
     set(CPACK_DMG_VOLUME_NAME "${PROJECT_NAME}")
     set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/resources/icon64.png")
     set(CPACK_OSX_PACKAGE_VERSION "10.6")
-
+    set(CPACK_BUNDLE_NAME "${PROJECT_NAME}" )
+    #set(CPACK_BUNDLE_PLIST ${CMAKE_SOURCE_DIR}/resources/Info.plist)
+    set(CPACK_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/resources/Icon.icns)
+    set(CPACK_PACKAGE_ICON ${CMAKE_SOURCE_DIR}/resources/Icon.icns)
+    set(CPACK_BUNDLE_STARTUP_COMMAND ${APP_LOCATION})
     set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
+
     macdeployqt(${PROJECT_NAME})
 
 else()
     #-----------------------------------------------------------------------------
     # Linux specific
-    set(CPACK_GENERATOR "TBZ2;TXZ")
+    list(APPEND CPACK_GENERATOR TBZ2 TXZ)
     message(STATUS "Package generation - UNIX")
     message(STATUS "   + TBZ2                                 YES ")
     message(STATUS "   + TXZ                                  YES ")
@@ -157,7 +173,7 @@ else()
         message(STATUS "   + RPM                                  NO ")
     endif()
 
-    set(CPACK_GENERATOR "${CPACK_GENERATOR};DEB")
+    list(APPEND CPACK_GENERATOR DEB)
     message(STATUS "   + DEB                                  YES ")
     set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION TRUE)
@@ -181,14 +197,6 @@ else()
 
    # set package icon
     set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/example.png")
-endif()
-
-# Qt IFW packaging framework
-if(BINARYCREATOR_EXECUTABLE)
-    set(CPACK_GENERATOR "${CPACK_GENERATOR};IFW")
-    message(STATUS "   + Qt Installer Framework               YES ")
-else()
-    message(STATUS "   + Qt Installer Framework                NO ")
 endif()
 
 include(CPack)

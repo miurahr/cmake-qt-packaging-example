@@ -41,7 +41,10 @@ endif()
 # Apple Install Settings
 if(APPLE)
     set(CMAKE_MACOSX_BUNDLE ON)
-    install(TARGETS ${target} BUNDLE RUNTIME DESTINATION Example)
+    set(CMAKE_MACOSX_RPATH ON)
+    install(TARGETS ${target}
+            BUNDLE DESTINATION .
+            RUNTIME DESTINATION .)
     set_source_files_properties(resources/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
