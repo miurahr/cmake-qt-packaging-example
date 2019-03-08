@@ -57,7 +57,11 @@ endfunction()
 
 function(macdeployqt target)
     file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/CPackMacDeployQt.cmake
-         CONTENT "execute_process(COMMAND \"${MACDEPLOYQT_EXECUTABLE}\" \"${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/Darwin/BUNDLE/${CPACK_PACKAGING_INSTALL_PREFIX}/../../\" -always-overwrite)")
+      CONTENT "foreach(_PACKAGER ${CPACK_GENERATOR})
+                 execute_process(COMMAND ls -lR \"${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/Darwin/${_PACKAGER}/\")
+                 execute_process(COMMAND \"${MACDEPLOYQT_EXECUTABLE}\" \"${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/Darwin/${_PACKAGER}/${CMAKE_INSTALL_PREFIX}/\" -always-overwrite)
+               endforeach()
+               ")
     install(SCRIPT ${CMAKE_BINARY_DIR}/CPackMacDeployQt.cmake COMPONENT Runtime)
     include(InstallRequiredSystemLibraries)
 endfunction()
@@ -132,6 +136,7 @@ if(WIN32 AND NOT UNIX)
     else()
         message(STATUS "   + NuGET                                NO ")
     endif()
+    set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/icon.ico")
 
     windeployqt(${PROJECT_NAME})
 
@@ -140,16 +145,13 @@ elseif(APPLE)
     # Apple specific
     message(STATUS "Package generation - Mac OS X")
     message(STATUS "   + TBZ2                                 YES ")
-    message(STATUS "   + BUNDLE                               YES ")
+    message(STATUS "   + DMZ                                  YES ")
 
-    list(APPEND CPACK_GENERATOR TBZ2 BUNDLE)
+    list(APPEND CPACK_GENERATOR TBZ2 DragNDrop)
     set(APP_LOCATION "$<TARGET_FILE:${PROJECT_NAME}>" )
     set(CPACK_DMG_VOLUME_NAME "${PROJECT_NAME}")
+    set(CPACK_DMG_FORMAT "UDBZ")
     set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/resources/icon64.png")
-    set(CPACK_OSX_PACKAGE_VERSION "10.6")
-    set(CPACK_BUNDLE_NAME "${PROJECT_NAME}" )
-    set(CPACK_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/resources/Icon.icns)
-    set(CPACK_BUNDLE_PLIST "${CMAKE_BINARY_DIR}/Info.plist")
     set(CPACK_PACKAGE_ICON ${CMAKE_SOURCE_DIR}/resources/Icon.icns)
     set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
 
@@ -194,8 +196,7 @@ else()
         message(STATUS "   + AppImage                              NO ")
     endif()
 
-   # set package icon
-    set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/example.png")
+    set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/icon64.png")
 endif()
 
 include(CPack)
