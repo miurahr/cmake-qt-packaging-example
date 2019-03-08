@@ -2,6 +2,8 @@ jobs:
 - job: Ubuntu_1604
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    linuxdeployqtVersion: continuous
   steps:
     - task: UsePythonVersion@0
       inputs:
@@ -11,8 +13,8 @@ jobs:
         sudo apt-get -q update
         sudo apt-get install -y -q cmake ninja-build make g++ rpm p7zip-full
         sudo apt-get install -y -q qtbase5-dev qt5-style-plugins
-        wget -q https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-        sudo install linuxdeployqt-continuous-x86_64.AppImage /usr/local/bin/
+        wget -q -O linuxdeployqt https://github.com/probonopd/linuxdeployqt/releases/download/$(linuxdeployqtVersion)/linuxdeployqt-$(linuxdeployqtVersion)-x86_64.AppImage
+        sudo install linuxdeployqt /usr/local/bin/
       displayName: install dependencies
     - task: CMake@1
       displayName: configure
@@ -43,6 +45,12 @@ jobs:
       inputs:
         workingDirectory: '$(Build.BinariesDirectory)/build'
         cmakeArgs: -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DQt5_DIR=/usr/local/opt/Qt5.12.1/5.12.1/clang_64/lib/cmake/Qt5/ $(Build.SourcesDirectory)
+    - task: CMake@1
+      displayName: build
+      inputs:
+        workingDirectory: '$(Build.BinariesDirectory)/build'
+        cmakeArgs: --build $(Build.BinariesDirectory)/build
+    - script: ls -l $(Build.BinariesDirectory)/build
     - task: CMake@1
       displayName: build
       inputs:
