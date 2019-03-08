@@ -15,10 +15,14 @@ elseif(APPLE)
 else()
   set(Qt5_DIR "" CACHE PATH "directory where Qt5Config.cmake exists.")
 endif()
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 ##---------------------------------------------------------------------------------
-
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+if(WIN32)
+  set(CMAKE_WIN32_EXECUTABLE ON)
+elseif(APPLE)
+  set(CMAKE_MACOSX_BUNDLE ON)
+endif()
 set(target ${PROJECT_NAME})
 add_executable(${target} src/main.cpp)
 target_link_libraries(${target} PRIVATE Qt5::Core Qt5::Widgets)
@@ -32,19 +36,13 @@ set_target_properties(${target} PROPERTIES AUTORCC_OPTIONS "--compress;9")
 
 if(UNIX AND NOT APPLE)
     install(TARGETS ${target} RUNTIME DESTINATION bin)
-endif()
-# Windows install Settings
-if(WIN32)
+elseif(WIN32)
     install(TARGETS ${target} RUNTIME DESTINATION bin)
-endif()
-
-# Apple Install Settings
-if(APPLE)
+elseif(APPLE)
     set(CMAKE_MACOSX_BUNDLE ON)
     set(CMAKE_MACOSX_RPATH ON)
-    install(TARGETS ${target}
-            BUNDLE DESTINATION .
-            RUNTIME DESTINATION .)
+    install(TARGETS ${target} BUNDLE DESTINATION .
+                              RUNTIME DESTINATION .)
     set_source_files_properties(resources/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
