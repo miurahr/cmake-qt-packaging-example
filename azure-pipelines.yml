@@ -50,7 +50,6 @@ jobs:
       inputs:
         workingDirectory: '$(Build.BinariesDirectory)/build'
         cmakeArgs: --build $(Build.BinariesDirectory)/build
-    - script: ls -l $(Build.BinariesDirectory)/build
     - task: CMake@1
       displayName: build
       inputs:
@@ -78,8 +77,16 @@ jobs:
         workingDirectory: $(Build.BinariesDirectory)
         cmakeArgs: -G "Visual Studio 15 2017 Win64" -DQt5_DIR=$(Build.BinariesDirectory)\Qt5.12.1\5.12.1\msvc2017_64\lib\cmake\Qt5 $(Build.SourcesDirectory)
     - task: CMake@1
-      displayName: build Release
+      displayName: build
+      inputs:
+        workingDirectory: $(Build.BinariesDirectory)
+        cmakeArgs: --build . --config Release
+    - task: CMake@1
+      displayName: build package
       inputs:
         workingDirectory: $(Build.BinariesDirectory)
         cmakeArgs: --build . --target bundle --config Release
-    - script: ls -l $(Build.BinariesDirectory)
+    - script: |
+        cat $(Build.BinariesDirectory)/_CPack_Packages/win64/NSIS/NSISOutput.log
+        ls -l $(Build.BinariesDirectory)
+
