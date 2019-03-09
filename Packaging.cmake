@@ -132,7 +132,6 @@ if(WIN32 AND NOT UNIX)
     else()
         message(STATUS "   + NuGET                                NO ")
     endif()
-    set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/icon.ico")
 
     windeployqt(${PROJECT_NAME})
 
