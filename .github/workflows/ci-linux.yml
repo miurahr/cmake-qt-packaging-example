@@ -33,6 +33,6 @@ jobs:
           parallel: 2
       - name: Package Project
         run: |
-          linuxdeploy-x86_64.AppImage --appdir ./AppDir --plugin qt --output appimage -d ./AppDir/usr/share/desktop/example.desktop
+          linuxdeploy-x86_64.AppImage --appdir ./AppDir --plugin qt --output appimage -d ./AppDir/usr/share/applications/example.desktop
         working-directory: ${{runner.workspace}}/build
 
