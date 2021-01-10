@@ -1,0 +1,45 @@
+name: Build on Linux
+
+on: push
+
+jobs:
+  build-linux:
+    name: Build On Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install linuxdeploy
+        uses: miurahr/install-linuxdeploy-action@v1
+        with:
+          plugins: qt appimage
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: 5.12.10
+          target: desktop
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Create Build Dir
+        run: mkdir build
+        working-directory: ${{runner.workspace}}
+      - uses: uses: lukka/get-cmake@latest 
+      - name: Run CMake configure
+        uses: lukka/run-cmake@v3
+        with:
+          cmakeGenerator: 'Ninja'  
+          cmakeListsOrSettingsJson: 'CMakeListsTxtBasic'
+      - uses: lukka/run-cmake@v3
+        with:
+          buildWithCMakeArgs: '--target bundle'
+      - name: Install Project
+        run: |
+          mkdir AppDir
+          make install INSTALL_ROOT=${{runner.workspace}}/build/AppDir
+        working-directory: ${{runner.workspace}}/build
+      - name: Package Project
+        run: |
+          linuxdeploy-x86_64.AppImage --appdir ./AppDir --plugin qt --output appimage
+        working-directory: ${{runner.workspace}}/build
+
