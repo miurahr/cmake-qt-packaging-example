@@ -7,11 +7,10 @@ jobs:
   steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.6'
-        architecture: 'x64'
+        versionSpec: '3.x'
     - script: |
         sudo apt-get -q update
-        sudo apt-get install -y -q cmake ninja-build make g++ rpm p7zip-full
+        sudo apt-get install -y -q cmake ninja-build make g++ rpm
         sudo apt-get install -y -q qtbase5-dev qt5-style-plugins
         wget -q -O linuxdeployqt https://github.com/probonopd/linuxdeployqt/releases/download/$(linuxdeployqtVersion)/linuxdeployqt-$(linuxdeployqtVersion)-x86_64.AppImage
         sudo install linuxdeployqt /usr/local/bin/
@@ -36,15 +35,15 @@ jobs:
       inputs:
         versionSpec: '3.x'
     - script: |
-        brew install p7zip
         pip install aqtinstall
-        (cd /usr/local/opt; aqtinst 5.12.1 mac desktop clang_64)
+        mkdir -p /usr/local/opt/Qt
+        (cd /usr/local/opt/Qt && python -m aqt install 5.12.10 mac desktop clang_64)
       displayName: install qt
     - task: CMake@1
       displayName: configure
       inputs:
         workingDirectory: '$(Build.BinariesDirectory)/build'
-        cmakeArgs: -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DQt5_DIR=/usr/local/opt/Qt5.12.1/5.12.1/clang_64/lib/cmake/Qt5/ $(Build.SourcesDirectory)
+        cmakeArgs: -DQt5_DIR=/usr/local/opt/Qt/5.12.10/clang_64/lib/cmake/Qt5/ $(Build.SourcesDirectory)
     - task: CMake@1
       displayName: build
       inputs:
@@ -63,19 +62,17 @@ jobs:
   steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.6'
-        architecture: 'x64'
+        versionSpec: '3.x'
     - script: |
-        cinst --no-progress -y 7zip
         pip install aqtinstall
         cd $(Build.BinariesDirectory)
-        python -m aqt 5.12.1 windows desktop win64_msvc2017_64
+        python -m aqt install 5.12.10 windows desktop win64_msvc2017_64
       displayName: install qt
     - task: CMake@1
       displayName: configure
       inputs:
         workingDirectory: $(Build.BinariesDirectory)
-        cmakeArgs: -G "Visual Studio 15 2017 Win64" -DQt5_DIR=$(Build.BinariesDirectory)\Qt5.12.1\5.12.1\msvc2017_64\lib\cmake\Qt5 $(Build.SourcesDirectory)
+        cmakeArgs: -G "Visual Studio 15 2017 Win64" -DQt5_DIR=$(Build.BinariesDirectory)\5.12.1\msvc2017_64\lib\cmake\Qt5 $(Build.SourcesDirectory)
     - task: CMake@1
       displayName: build
       inputs:
