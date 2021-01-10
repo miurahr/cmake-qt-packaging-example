@@ -19,7 +19,7 @@ jobs:
           target: desktop
       - name: Install dependency
         run: |
-          sudo apt-get install cmake build-essential
+          sudo apt-get install cmake build-essential dpkg-dev
           mkdir AppDir
       - name: Build with cmake
         uses: ashutoshvarma/action-cmake-build@master
