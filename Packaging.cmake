@@ -180,12 +180,12 @@ else()
         message(STATUS "   + RPM                                  NO ")
     endif()
 
-    list(APPEND CPACK_GENERATOR DEB)
-    message(STATUS "   + DEB                                  YES ")
+    # list(APPEND CPACK_GENERATOR DEB)
+    message(STATUS "   + DEB                                  NO ")
     set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION TRUE)
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${PROJECT_URL}")
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)  # ON When build with libraries only from debian packages
 
     if(LINUXDEPLOYQT_EXECUTABLE)
         message(STATUS "   + AppImage                             YES ")
