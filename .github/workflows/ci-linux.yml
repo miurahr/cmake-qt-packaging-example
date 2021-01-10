@@ -20,14 +20,12 @@ jobs:
       - name: Install dependency
         run: sudo apt-get install cmake build-essential
       - name: Build with cmake
-￼       uses: ashutoshvarma/action-cmake-build@master
-￼       with:
-￼         build-dir: ${{ runner.workspace }}/build
-￼         cc: gcc
-￼         cxx: g++
-￼         build-type: Release
-￼         configure-options:
-￼         parallel: 2
+        uses: ashutoshvarma/action-cmake-build@master
+        with:
+          build-dir: ${{ runner.workspace }}/build
+          build-type: Release
+          configure-options:
+          parallel: 2
       - name: Install Project
         run: |
           mkdir AppDir
