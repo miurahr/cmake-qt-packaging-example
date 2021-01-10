@@ -17,22 +17,17 @@ jobs:
         with:
           version: 5.12.10
           target: desktop
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.6
-      - name: Create Build Dir
-        run: mkdir build
-        working-directory: ${{runner.workspace}}
-      - uses: uses: lukka/get-cmake@latest 
-      - name: Run CMake configure
-        uses: lukka/run-cmake@v3
-        with:
-          cmakeGenerator: 'Ninja'  
-          cmakeListsOrSettingsJson: 'CMakeListsTxtBasic'
-      - uses: lukka/run-cmake@v3
-        with:
-          buildWithCMakeArgs: '--target bundle'
+      - name: Install dependency
+        run: sudo apt-get install cmake build-essential
+      - name: Build with cmake
+￼        uses: ashutoshvarma/action-cmake-build@master
+￼        with:
+￼          build-dir: ${{ runner.workspace }}/build
+￼          cc: gcc
+￼          cxx: g++
+￼          build-type: Release
+￼          configure-options:
+￼          parallel: 2
       - name: Install Project
         run: |
           mkdir AppDir
