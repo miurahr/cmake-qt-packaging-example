@@ -26,12 +26,13 @@ jobs:
         with:
           build-dir: ${{ runner.workspace }}/build
           build-type: Release
+          config-options: -DCMAKE_INSTALL_PREFIX=/usr
           target: bundle
           install-build: true
           install-options: --prefix ${{runner.workspace}}/build/AppDir
           parallel: 2
       - name: Package Project
         run: |
-          linuxdeploy-x86_64.AppImage --appdir ./AppDir --plugin qt --output appimage
+          linuxdeploy-x86_64.AppImage --appdir ./AppDir --plugin qt --output appimage -d ./AppDir/usr/share/desktop/example.desktop
         working-directory: ${{runner.workspace}}/build
 
