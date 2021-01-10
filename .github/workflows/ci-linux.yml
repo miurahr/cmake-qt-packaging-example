@@ -18,19 +18,19 @@ jobs:
           version: 5.12.10
           target: desktop
       - name: Install dependency
-        run: sudo apt-get install cmake build-essential
+        run: |
+          sudo apt-get install cmake build-essential
+          mkdir AppDir
       - name: Build with cmake
         uses: ashutoshvarma/action-cmake-build@master
         with:
           build-dir: ${{ runner.workspace }}/build
           build-type: Release
+          target: bundle
           configure-options:
+          install-build: true
+          install-options: -DINSTALL_ROOT=${{runner.workspace}}/build/AppDir
           parallel: 2
-      - name: Install Project
-        run: |
-          mkdir AppDir
-          make install INSTALL_ROOT=${{runner.workspace}}/build/AppDir
-        working-directory: ${{runner.workspace}}/build
       - name: Package Project
         run: |
           linuxdeploy-x86_64.AppImage --appdir ./AppDir --plugin qt --output appimage
