@@ -27,9 +27,8 @@ jobs:
           build-dir: ${{ runner.workspace }}/build
           build-type: Release
           target: bundle
-          configure-options:
           install-build: true
-          install-options: -DINSTALL_ROOT=${{runner.workspace}}/build/AppDir
+          install-options: --prefix ${{runner.workspace}}/build/AppDir
           parallel: 2
       - name: Package Project
         run: |
