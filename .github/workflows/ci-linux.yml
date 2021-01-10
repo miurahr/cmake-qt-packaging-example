@@ -26,7 +26,7 @@ jobs:
         with:
           build-dir: ${{ runner.workspace }}/build
           build-type: Release
-          config-options: -DCMAKE_INSTALL_PREFIX=/usr
+          configure-options: -DCMAKE_INSTALL_PREFIX=/usr
           target: bundle
           install-build: true
           install-options: --prefix ${{runner.workspace}}/build/AppDir
