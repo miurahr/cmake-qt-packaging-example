@@ -72,7 +72,7 @@ jobs:
       displayName: configure
       inputs:
         workingDirectory: $(Build.BinariesDirectory)
-        cmakeArgs: -G "Visual Studio 15 2017 Win64" -DQt5_DIR=$(Build.BinariesDirectory)\5.12.1\msvc2017_64\lib\cmake\Qt5 $(Build.SourcesDirectory)
+        cmakeArgs: -G "Visual Studio 15 2017 Win64" -DQt5_DIR=$(Build.BinariesDirectory)\5.12.10\msvc2017_64\lib\cmake\Qt5 $(Build.SourcesDirectory)
     - task: CMake@1
       displayName: build
       inputs:
