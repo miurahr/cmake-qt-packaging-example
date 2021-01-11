@@ -17,7 +17,6 @@ jobs:
         with:
           version: 5.12.10
           target: desktop
-          modules: qtwidgets
       - name: Install dependency
         run: |
           sudo apt-get install cmake build-essential dpkg-dev
@@ -36,5 +35,7 @@ jobs:
       - name: Package Project
         run: |
           linuxdeploy-x86_64.AppImage --appdir ${{ runner.workspace }}/build/AppDir --plugin qt --output appimage -d ${{ runner.workspace }}/build/AppDir/usr/share/applications/example.desktop
+        env:
+          QMAKE: ${Qt5_DIR}/bin/qmake
         working-directory: ${{runner.workspace}}/build
 
