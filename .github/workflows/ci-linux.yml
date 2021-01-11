@@ -32,7 +32,6 @@ jobs:
           parallel: 2
         env:
           DESTDIR: ${{runner.workspace}}/build/AppDir
-        working-directory: ${{runner.workspace}}/build
       - name: Package Project
         run: |
           linuxdeploy-x86_64.AppImage --appdir ${{ runner.workspace }}/build/AppDir --plugin qt --output appimage -d ${{ runner.workspace }}/build/AppDir/usr/share/applications/example.desktop
