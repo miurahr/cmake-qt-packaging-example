@@ -17,6 +17,7 @@ jobs:
         with:
           version: 5.12.10
           target: desktop
+          modules: qtwidgets
       - name: Install dependency
         run: |
           sudo apt-get install cmake build-essential dpkg-dev
