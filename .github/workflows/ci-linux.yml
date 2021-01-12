@@ -5,7 +5,7 @@ on: push
 jobs:
   build-linux:
     name: Build On Ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Install linuxdeploy
@@ -28,5 +28,5 @@ jobs:
           build-type: Release
           configure-options: -DCMAKE_INSTALL_PREFIX=/usr
           target: bundle
-          install-build: true
+          install-build: false
           parallel: 2
