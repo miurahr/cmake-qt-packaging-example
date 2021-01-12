@@ -1,0 +1,32 @@
+name: Build on Linux
+
+on: push
+
+jobs:
+  build-linux:
+    name: Build On Ubuntu
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install linuxdeploy
+        uses: miurahr/install-linuxdeploy-action@v1
+        with:
+          plugins: qt appimage
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: 5.12.10
+          target: desktop
+      - name: Install dependency
+        run: |
+          sudo apt-get install cmake build-essential dpkg-dev
+          mkdir AppDir
+      - name: Build with cmake
+        uses: ashutoshvarma/action-cmake-build@master
+        with:
+          build-dir: ${{ runner.workspace }}/build
+          build-type: Release
+          configure-options: -DCMAKE_INSTALL_PREFIX=/usr
+          target: bundle
+          install-build: false
+          parallel: 2
