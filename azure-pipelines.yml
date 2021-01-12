@@ -1,7 +1,7 @@
 jobs:
-- job: Ubuntu_1604
+- job: Ubuntu_Linux
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-18.04'
   steps:
     - task: UsePythonVersion@0
       inputs:
@@ -9,7 +9,7 @@ jobs:
     - script: |
         sudo apt-get -q update
         sudo apt-get install -y -q cmake ninja-build make g++ rpm
-        sudo apt-get install -y -q qtbase5-dev qt5-style-plugins
+        sudo apt-get install -y -q qtbase5-dev qt5-style-plugins qt5-qmake libqt5widgets5
         wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
         wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
