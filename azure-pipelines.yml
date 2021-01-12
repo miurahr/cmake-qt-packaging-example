@@ -1,5 +1,5 @@
 jobs:
-- job: Ubuntu Linux
+- job: Ubuntu_Linux
   pool:
     vmImage: 'ubuntu-18.04'
   steps:
