@@ -1,7 +1,7 @@
 
-find_package(Qt5Core REQUIRED)
-get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
-get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+find_package(Qt5 COMPONENTS Core REQUIRED)
+get_target_property(qmake_executable Qt5::qmake IMPORTED_LOCATION)
+get_filename_component(_qt_bin_dir "${qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 find_program(LINUXDEPLOY_EXECUTABLE linuxdeploy linuxdeploy-x86_64.AppImage HINTS "${_qt_bin_dir}")
 find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
@@ -20,7 +20,7 @@ function(linuxdeployqt destdir desktopfile)
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     # packaging AppImage
     add_custom_command(TARGET bundle POST_BUILD
-                       COMMAND "${LINUXDEPLOY_EXECUTABLE}" --appdir=${destdir} --plugin=qt --output=appimage  -d ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
+                       COMMAND env QMAKE=${qmake_executable} "${LINUXDEPLOY_EXECUTABLE}" --appdir=${destdir} --plugin=qt --output=appimage  -d ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
