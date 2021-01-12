@@ -2,8 +2,6 @@ jobs:
 - job: Ubuntu_1604
   pool:
     vmImage: 'ubuntu-16.04'
-  variables:
-    linuxdeployqtVersion: 6
   steps:
     - task: UsePythonVersion@0
       inputs:
@@ -12,8 +10,12 @@ jobs:
         sudo apt-get -q update
         sudo apt-get install -y -q cmake ninja-build make g++ rpm
         sudo apt-get install -y -q qtbase5-dev qt5-style-plugins
-        wget -q -O linuxdeployqt https://github.com/probonopd/linuxdeployqt/releases/download/$(linuxdeployqtVersion)/linuxdeployqt-$(linuxdeployqtVersion)-x86_64.AppImage
-        sudo install linuxdeployqt /usr/local/bin/
+        wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+        wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
+        sudo install linuxdeploy-x86_64.AppImage /usr/local/bin/
+        sudo install linuxdeploy-plugin-qt-x86_64.AppImage /usr/local/bin/
+        sudo install linuxdeploy-plugin-appimage-x86_64.AppImage /usr/local/bin/
       displayName: install dependencies
     - task: CMake@1
       displayName: configure
