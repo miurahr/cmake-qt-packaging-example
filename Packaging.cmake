@@ -20,7 +20,7 @@ function(linuxdeployqt destdir desktopfile)
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     # packaging AppImage
     add_custom_command(TARGET bundle POST_BUILD
-                       COMMAND env QMAKE=${qmake_executable} "${LINUXDEPLOY_EXECUTABLE}" --appdir=${destdir} --plugin=qt --output=appimage  -d ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
+                       COMMAND env QMAKE=${qmake_executable} "${LINUXDEPLOY_EXECUTABLE}" --appdir=${destdir} --plugin=qt --output=appimage -e ${CMAKE_BINARY_DIR}/${target} -d ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
