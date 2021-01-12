@@ -3,7 +3,7 @@ find_package(Qt5Core REQUIRED)
 get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
-find_program(LINUXDEPLOYQT_EXECUTABLE linuxdeployqt linuxdeployqt-continuous-x86_64.AppImage HINTS "${_qt_bin_dir}")
+find_program(LINUXDEPLOY_EXECUTABLE linuxdeploy linuxdeploy-x86_64.AppImage HINTS "${_qt_bin_dir}")
 find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
 find_program(MACDEPLOYQTFIX_EXECUTABLE macdeployqtfix.py HINTS "${_qt_bin_dir}")
 find_package(Python)
@@ -11,22 +11,16 @@ find_package(Python)
 set(CPACK_IFW_ROOT $ENV{HOME}/Qt/QtIFW-3.0.6/ CACHE PATH "Qt Installer Framework installation base path")
 find_program(BINARYCREATOR_EXECUTABLE binarycreator HINTS "${_qt_bin_dir}" ${CPACK_IFW_ROOT}/bin)
 
-mark_as_advanced(WINDEPLOYQT_EXECUTABLE LINUXDEPLOYQT_EXECUTABLE MACDEPLOYQT_EXECUTABLE)
+mark_as_advanced(WINDEPLOYQT_EXECUTABLE LINUXDEPLOY_EXECUTABLE MACDEPLOYQT_EXECUTABLE)
 
 function(linuxdeployqt destdir desktopfile)
     # creating AppDir
     add_custom_command(TARGET bundle PRE_BUILD
                        COMMAND "${CMAKE_MAKE_PROGRAM}" DESTDIR=${destdir} install
-                       COMMAND "${LINUXDEPLOYQT_EXECUTABLE}" ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile} -bundle-non-qt-libs
-                               -qmake=${_qmake_executable}
-                       # hot fix for a known issue for libnss3 and libnssutils3.
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${NSS3_PLUGIN_PATH}
-                                                                  ${destdir}/${CMAKE_INSTALL_PREFIX}/lib/
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     # packaging AppImage
     add_custom_command(TARGET bundle POST_BUILD
-                       COMMAND "${LINUXDEPLOYQT_EXECUTABLE}"  ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
-                               -appimage -qmake=${_qmake_executable}
+                       COMMAND env QMAKE=${_qmake_executable} "${LINUXDEPLOY_EXECUTABLE}"  --appdir=${destdir} --plugin=qt --output=appimage  -d ${destdir}/${CMAKE_INSTALL_PREFIX}/${desktopfile}
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
@@ -191,10 +185,8 @@ else()
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${PROJECT_URL}")
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
-    if(LINUXDEPLOYQT_EXECUTABLE)
+    if(LINUXDEPLOY_EXECUTABLE)
         message(STATUS "   + AppImage                             YES ")
-        find_path(NSS3_PLUGIN_PATH NAMES libsoftokn3.so PATHS /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE} /usr/lib /usr/local/lib
-                  PATH_SUFFIXES nss NO_DEFAULT_PATH)
         if(CMAKE_VERSION VERSION_LESS 3.13)
             linuxdeployqt("${CPACK_PACKAGE_DIRECTORY}/_CPack_Packages/Linux/AppImage" "share/applications/example.desktop")
         else()
