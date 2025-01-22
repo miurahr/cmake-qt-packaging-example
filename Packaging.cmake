@@ -27,6 +27,7 @@ endfunction()
 function(windeployqt target)
 
     # Bundle Library Files
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_UPPER)
     if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
         set(WINDEPLOYQT_ARGS --debug)
     else()
