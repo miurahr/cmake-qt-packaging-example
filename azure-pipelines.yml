@@ -1,7 +1,7 @@
 jobs:
 - job: Ubuntu_Linux
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-latest'
   steps:
     - task: UsePythonVersion@0
       inputs:
@@ -31,7 +31,7 @@ jobs:
 
 - job: macOS
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-latest'
   steps:
     - task: UsePythonVersion@0
       inputs:
@@ -60,7 +60,7 @@ jobs:
 
 - job: Windows64
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2022'
   steps:
     - task: UsePythonVersion@0
       inputs:
@@ -68,7 +68,7 @@ jobs:
     - script: |
         pip install aqtinstall
         cd $(Build.BinariesDirectory)
-        python -m aqt install 5.12.10 windows desktop win64_msvc2017_64
+        python -m aqt install 6.5.3 windows desktop win64_msvc2022_64
       displayName: install qt
     - task: CMake@1
       displayName: configure
